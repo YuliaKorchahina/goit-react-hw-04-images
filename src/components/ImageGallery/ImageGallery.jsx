@@ -1,5 +1,5 @@
+import { useState } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-import { Component } from 'react';
 import { getImages } from 'components/API/getImages';
 import { Button } from 'components/Button/Button';
 import { Loader } from 'components/Loader/Loader';
@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 
 import styles from 'styles.module.css';
 import { Modal } from 'components/Modal/Modal';
+import { useEffect } from 'react';
 
 const defaultStateData = {
   images: [],
@@ -15,97 +16,106 @@ const defaultStateData = {
   error: null,
   page: 1,
   modalOpen: false,
+  search: '',
   modalContent: {
     largeImageURL: '',
     tags: '',
   },
 };
-export class ImageGallery extends Component {
-  state = {
-    ...defaultStateData,
+
+const modalInitialState = {
+  largeImageURL: '',
+  tags: '',
+};
+
+export const ImageGallery = ({ value }) => {
+  const [images, setImages] = useState(defaultStateData.images);
+  const [loading, setLoading] = useState(defaultStateData.loading);
+  const [error, setError] = useState(defaultStateData.error);
+  const [search, setSearch] = useState(defaultStateData.search);
+  const [page, setPage] = useState(defaultStateData.page);
+  const [modalOpen, setModalOpen] = useState(defaultStateData.modalOpen);
+  const [modalContent, setModalContent] = useState(
+    defaultStateData.modalContent
+  );
+
+  const settingState = (data, isNewData = true) => {
+    setImages(prevState => [...(!isNewData ? prevState : []), ...data]);
+    setPage(prevState => ++prevState);
+    if (!data.hits.length) {
+      toast.error(`Oooops... No information for your request ${value}`);
+    }
   };
 
-  settingState(data, isNewData = true) {
-    this.setState(prevState => ({
-      images: [...(!isNewData ? prevState.images : []), ...data],
-      page: ++prevState.page,
-    }));
-    if (!data.hits.length) {
-      toast.error(
-        `Oooops... No information for your request ${this.props.value}`
-      );
-    }
-  }
-
-  requestImages(value, isNewData, page) {
-    this.setState({ loading: true });
+  const requestImages = (value, isNewData, page) => {
+    setLoading({ loading: true });
     getImages(value.trim(), page)
       .then(response => response.json())
       .then(data => {
-        this.settingState(data.hits, isNewData);
-        this.setState({ loading: false });
+        settingState(data.hits, isNewData);
       })
       .catch(error => {
-        this.setState({ error });
+        setError(error);
       })
-      .finally(() => this.setState({ loading: false }));
-  }
+      .finally(() => setLoading(false));
+  };
 
-  componentDidUpdate(prevProps) {
-    const { value } = this.props;
-    if (prevProps.value !== value) {
-      this.setState({ ...defaultStateData });
-      this.requestImages(value, true, defaultStateData.page);
+  const handleLoad = () => {
+    requestImages(value, false, page);
+  };
+
+  const openModal = modalContent => {
+    setModalOpen(true);
+    setModalContent(modalContent);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalContent(defaultStateData.modalContent);
+  };
+
+  const setDefaultData = searchValue => {
+    setError(defaultStateData.error);
+    setSearch(searchValue);
+    setImages(defaultStateData.images);
+    setPage(defaultStateData.page);
+    setModalOpen(defaultStateData.modalOpen);
+    setModalContent({ ...defaultStateData.modalContent });
+  };
+
+  useEffect(() => {
+    if (search !== value) {
+      setDefaultData(value);
+      setSearch(value);
+      requestImages(value, true, defaultStateData.page);
     }
-  }
+  }, [value]);
 
-  handleLoad = () => {
-    const { value } = this.props;
-    this.requestImages(value, false, this.state.page);
-  };
+  return (
+    <>
+      {modalOpen && (
+        <Modal close={closeModal}>
+          <img src={modalContent.largeImageURL} alt={modalContent.tags}></img>
+        </Modal>
+      )}
 
-  openModal = modalContent => {
-    this.setState({
-      modalOpen: true,
-      modalContent,
-    });
-  };
+      {loading && <Loader />}
+      <ul className={styles.ImageGallery}>
+        {images.map(({ id, webformatURL, largeImageURL, tags }) => {
+          return (
+            <ImageGalleryItem
+              key={id}
+              webformatURL={webformatURL}
+              onClick={() => openModal({ largeImageURL, tags })}
+            />
+          );
+        })}
+      </ul>
 
-  closeModal = () => {
-    this.setState({
-      modalOpen: false,
-    });
-  };
-
-  render() {
-    const { images, modalOpen, modalContent } = this.state;
-    const { openModal, closeModal } = this;
-    return (
-      <>
-        {modalOpen && (
-          <Modal close={closeModal}>
-            <img src={modalContent.largeImageURL} alt={modalContent.tags}></img>
-          </Modal>
-        )}
-
-        {this.state.loading && <Loader />}
-        <ul className={styles.ImageGallery}>
-          {images.map(({ id, webformatURL, largeImageURL, tags }) => {
-            return (
-              <ImageGalleryItem
-                key={id}
-                webformatURL={webformatURL}
-                onClick={() => openModal({ largeImageURL, tags })}
-              />
-            );
-          })}
-        </ul>
-
-        {images.length ? <Button onClick={this.handleLoad} /> : <></>}
-      </>
-    );
-  }
-}
+      {images.length ? <Button onClick={handleLoad} /> : <></>}
+    </>
+  );
+};
 
 ImageGallery.defaultProps = {
   images: [],
