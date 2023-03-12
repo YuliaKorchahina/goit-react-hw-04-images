@@ -3,7 +3,6 @@ import styles from 'styles.module.css';
 import { toast } from 'react-hot-toast';
 import PropTypes from 'prop-types';
 
-
 export class Searchbar extends Component {
   state = {
     value: '',
@@ -16,7 +15,7 @@ export class Searchbar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     if (!this.state.value.trim()) {
-      return toast.error('Enter correct search query')
+      return toast.error('Enter correct search query');
     }
     this.props.onSearch(this.state.value);
     this.setState({ value: '' });
@@ -30,7 +29,7 @@ export class Searchbar extends Component {
         <header className={styles.Searchbar}>
           <form className={styles.SearchForm} onSubmit={this.handleSubmit}>
             <button type="submit" className={styles.SearchForm_button}>
-              <span className={"button-label"}>Search</span>
+              <span className={'button-label'}>Search</span>
             </button>
 
             <input
@@ -49,6 +48,6 @@ export class Searchbar extends Component {
   }
 }
 
-Searchbar.propTypes ={
-  onSearch: PropTypes.func.isRequired
-}
+Searchbar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+};

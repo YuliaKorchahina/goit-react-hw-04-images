@@ -1,23 +1,20 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
 import { Toaster } from 'react-hot-toast';
 
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 
-export class App extends Component {
-  state = {
-    search: '',
-    page: 1,
+export const App =() => {
+  const [search, setSearch] = useState('');
+  // const [page, setPage] = useState(1)
+  
+
+  const handleSubmit = search => {
+    setSearch( search )
   };
 
-  handleSubmit = search => {
-    this.setState({ search });
-  };
-
-  render() {
-    const { search } = this.state;
-    return (
+     return (
       <div>
         <Toaster
           position="top-right"
@@ -25,9 +22,9 @@ export class App extends Component {
             duration: 2000,
           }}
         />
-        <Searchbar onSearch={this.handleSubmit} />
+        <Searchbar onSearch={handleSubmit} />
         <ImageGallery value={search} />
       </div>
     );
   }
-}
+
