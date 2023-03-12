@@ -3,28 +3,25 @@ import PropTypes from 'prop-types';
 
 import { useEffect } from 'react';
 
-export const Modal =({close, children}) => {
+export const Modal = ({ close, children }) => {
+  useEffect(() => {
+    document.addEventListener('keydown', closeModal);
+    return () => document.removeEventListener('keydown', closeModal);
+  });
 
-  useEffect(()=> {
-    document.addEventListener("keydown", closeModal); 
-    return () => document.removeEventListener("keydown", closeModal)
-  }, [])
-
-
-  const closeModal = ({target, currentTarget, code}) => {
-    if(target === currentTarget || code === "Escape") {
-        close()
+  const closeModal = ({ target, currentTarget, code }) => {
+    if (target === currentTarget || code === 'Escape') {
+      close();
     }
-}
+  };
 
-    return (
-      <div onClick={closeModal} className={styles.Overlay}>
-        <div className={styles.Modal}>{children}</div>
-      </div>
-    );
-  
-}
+  return (
+    <div onClick={closeModal} className={styles.Overlay}>
+      <div className={styles.Modal}>{children}</div>
+    </div>
+  );
+};
 
 Modal.propTypes = {
   close: PropTypes.func.isRequired,
-}
+};

@@ -7,7 +7,6 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 
 export const App =() => {
   const [search, setSearch] = useState('');
-  // const [page, setPage] = useState(1)
   
   const handleSubmit = search => {
     setSearch( search )

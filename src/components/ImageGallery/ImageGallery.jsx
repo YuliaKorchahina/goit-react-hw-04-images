@@ -23,11 +23,6 @@ const defaultStateData = {
   },
 };
 
-const modalInitialState = {
-  largeImageURL: '',
-  tags: '',
-};
-
 export const ImageGallery = ({ value }) => {
   const [images, setImages] = useState(defaultStateData.images);
   const [loading, setLoading] = useState(defaultStateData.loading);
@@ -43,11 +38,13 @@ export const ImageGallery = ({ value }) => {
     setImages(prevState => [...(!isNewData ? prevState : []), ...data]);
     setPage(prevState => ++prevState);
     if (!data.hits.length) {
+      console.info(error);
       toast.error(`Oooops... No information for your request ${value}`);
     }
   };
 
   const requestImages = (value, isNewData, page) => {
+    setSearch(value);
     setLoading({ loading: true });
     getImages(value.trim(), page)
       .then(response => response.json())
@@ -86,10 +83,9 @@ export const ImageGallery = ({ value }) => {
   useEffect(() => {
     if (search !== value) {
       setDefaultData(value);
-      setSearch(value);
       requestImages(value, true, defaultStateData.page);
     }
-  }, [value]);
+  });
 
   return (
     <>
